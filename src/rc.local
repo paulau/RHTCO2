@@ -14,8 +14,8 @@
 #sudo ntpd -q -g
 
 
-sudo python /home/pi/RHTCO2/RHTCO2_007.py /home/pi/RHTCO2/ 1>  /home/pi/RHTCO2/tmp_logger_out.txt 2> /home/pi/RHTCO2/tmp_logger_err.txt &
-sudo python3 /home/pi/RHTCO2/uplo05.py   /home/pi/RHTCO2/  settingsRHTCO2.py 1> /home/pi/RHTCO2/tmp_uplo_out.txt 2> /home/pi/RHTCO2/tmp_uplo_err.txt &
+sudo python /home/pi/RHTCO2/RHTCO2_009.py /home/pi/RHTCO2/ 1>  /home/pi/RHTCO2/tmp_logger_out.txt 2> /home/pi/RHTCO2/tmp_logger_err.txt &
+#sudo python3 /home/pi/RHTCO2/uplo05.py   /home/pi/RHTCO2/  settingsRHTCO2.py 1> /home/pi/RHTCO2/tmp_uplo_out.txt 2> /home/pi/RHTCO2/tmp_uplo_err.txt &
 
 
 # Print the IP address

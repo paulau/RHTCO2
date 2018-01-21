@@ -9,3 +9,6 @@ This project is implemented to
   (also available via php wrapper: sqlwrapper.php ana Apache Web Server)
 * To control LED: switch on, if CO2 -concentration too high is. 
 
+
+Raspberry should have following packages:
+apt-get install apache2 php5-common libapache2-mod-php5 php5-cli phpmyadmin

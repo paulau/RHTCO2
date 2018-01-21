@@ -1,0 +1,18 @@
+bash.exe in project folder
+
+git config --global user.name "Pavel Paulau"
+git config --global user.email p.v.paulau@gmail.com
+git init
+
+git add xxx/xxxxx.xx
+git add ...
+
+git commit -m "Initial version"
+
+git remote add origin https://github.com/paulau/RHTCO2.git
+git push -u origin master
+
+…or push an existing repository from the command line
+
+git remote add origin https://github.com/paulau/RHTCO2.git
+git push -u origin master
