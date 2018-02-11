@@ -21,7 +21,7 @@ description = "I23" #
 
 # ifSQLuser is defined, then mySQL will be used
 SQLuser = "logger"
-SQLpw = ""
+SQLpw = "logger112358"
 tabelle = "RHTCO2"
 SQLserver = "localhost"
 

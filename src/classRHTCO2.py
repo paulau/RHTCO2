@@ -103,8 +103,9 @@ class RHTCO2():
         self.co2Val = None  # before start getting this variable clean it
         self.h = None  # before start getting this variable clean it
         self.t = None  # before start getting this variable clean it
+        t0 = datetime.datetime.today()
         
-        while ((self.co2Val==None)|(self.h==None)|(self.t==None)): # try to get it until success
+        while (self.co2Val==None): # try to get it until success
             try:
 		    	# several attempts may be needed to read this sensor 
 		    	# TRICKY SENSOR
@@ -125,13 +126,6 @@ class RHTCO2():
 
                 self.co2Val = (resp[1]*256) + resp[2]                    
                 
-                self.h, self.t = dht.read_retry(dht.DHT22, self.P.DHTDataPin)
-                # can be rather slow !!! use HYT!!!
-                #self.h = 0.0
-                #self.t = 0.0
-                
-                # ================================================================
-       
         
 #        		# ================================================================
 #        		# if fedined address of HYT sensor then read it!!! 
@@ -154,18 +148,39 @@ class RHTCO2():
 ##                    temp = resp[2] << 6 | resp[3]
 ##                    self.T = 165.0*temp/(2**14)-40
 ##
-                self.ReadTime = datetime.datetime.today()    
-#                print(self.co2Val, " ", self.ReadTime)
+                
             except:
                 self.co2Val = None  # in case of exception clean it 
+                pass
+
+        t1 = datetime.datetime.today()
+
+        # get values of rh and t separately from value of rhtco2. 
+        # this is much weaker condition and must work much faster
+        while ((self.h==None)|(self.t==None)): # try to get it until success
+            try:
+                self.h, self.t = dht.read_retry(dht.DHT22, self.P.DHTDataPin)
+                # can be rather slow !!! use HYT!!!
+                #self.h = 0.0
+                #self.t = 0.0
+                # ================================================================
+            except:
                 self.h = None
                 self.t = None                
                 #self.H = None
                 #self.T = None                
                 pass
-
+                
+        self.ReadTime = datetime.datetime.today() 
+        t2 = datetime.datetime.today()
+        #print("CO2   ", self.TimeDeltaToSeconds(t0,t1))
+        #print("RHT   ", self.TimeDeltaToSeconds(t1,t2))
+        #print("------------------------------")
         
-    
+    def TimeDeltaToSeconds(self, t0,t1):
+        return (t1-t0).seconds + (t1-t0).microseconds / 1000000.0
+        
+        
 # ATTENTION !!! IT MUST BE CALLED ONLY AFTER GET DATA!!!!
     # SaveData function. 
     def SaveData(self): 

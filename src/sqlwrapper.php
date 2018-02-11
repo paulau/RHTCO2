@@ -18,7 +18,7 @@
 		die("Connection failed: " . $conn->connect_error);
 		} 
 	// select last element: 
-	$sql = "SELECT * FROM FAST order by id limit " . (string)$len . ";";
+	$sql = "SELECT * FROM FAST order by id desc limit " . (string)$len . ";";
 	$result = $conn->query($sql);	
 	
 	if ($result->num_rows > 0) {

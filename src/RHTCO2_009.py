@@ -32,7 +32,7 @@
 # sudo python /home/pi/RHTCO2/RHTCO2_009.py /home/pi/RHTCO2/ 1>  /home/pi/RHTCO2/tmp_logger_out.txt 2> /home/pi/RHTCO2/tmp_logger_err.txt &
 
 
-import time, sys, os
+import time, sys, os, datetime
 from classRHTCO2 import *  # RHTCO2 logger (controller) class
 
 import signal # to process kill signal and exit correctly
@@ -52,9 +52,13 @@ PrevSaveTime = logger.StartTime
 
 while True:
     try:
-        logger.GetData()
+        t0 = datetime.datetime.today()
+        logger.GetData()        
+        t01 = datetime.datetime.today()
         logger.SaveData()
+        t02 = datetime.datetime.today()
         logger.Control()
+        t03 = datetime.datetime.today()
        
         Prevtm = int(PrevSaveTime.strftime(logger.SwitchOutputFileInterval))
         tm = int(logger.ReadTime.strftime(logger.SwitchOutputFileInterval))
@@ -62,8 +66,25 @@ while True:
        
         if (Prevtm!=tm): # new file
             logger.SwitchOutputFile() 
-           
-        time.sleep(logger.P.LoggingRate) # sleep always logging rate.
+
+        t04 = datetime.datetime.today()
+
+        dt = t04 - t0
+        fdt  = dt.seconds + dt.microseconds / 1000000.0
+        waittime = logger.P.LoggingRate*1.0 - fdt
+                
+        if (waittime>0):
+            time.sleep(waittime) # sleep always logging rate.
+
+        t05 = datetime.datetime.today()
+        
+        #print("GetData  ", (t01-t0).seconds + (t01-t0).microseconds / 1000000.0)
+        #print("SaveData ", (t02-t01).seconds + (t02-t01).microseconds / 1000000.0)
+        #print("Control  ", (t03-t02).seconds + (t03-t02).microseconds / 1000000.0)
+        #print("SwOutp   ", (t04-t03).seconds + (t04-t03).microseconds / 1000000.0)
+        #print("timeop   ", (t05-t04).seconds + (t05-t04).microseconds / 1000000.0)        
+        #print("------------------------------")
+
 
     except KeyboardInterrupt:
         print("Keyboard Interrapt main script")
