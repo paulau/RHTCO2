@@ -170,7 +170,10 @@ configure if necessary all settings in settingsRHTCO2_009.py
 
 copy conf/rc.local and conf/sqlwrapper.php to /home/pi
 
-sudo mv rc.local /etc/
+copy relevant content from conf/rc.local
+and insert it using
+nano /etc/rc.local
+(to avoid change of filepermissions we do not copy or move this file)
 sudo mv sqlwrapper.php /var/www/
 
 apt-get install libapache2-mod-auth-mysql phpmyadmin
