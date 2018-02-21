@@ -25,6 +25,7 @@ if [ "$_IP" ]; then
 fi
 
 echo ds1307 0x68 > /sys/class/i2c-adapter/i2c-1/new_device
-hwclock -s
+sudo python /home/pi/settimetryer.py >> /home/pi/settimetryer_log.txt &
+#hwclock -s
 
 exit 0

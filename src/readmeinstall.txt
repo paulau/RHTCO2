@@ -6,48 +6,37 @@ and save
 4) Configure TCP/IP on Windows Computer, eg:
 IP 192.168.10.100
 Mask: 255.255.255.0
-
 5) Insert MicroSD into Raspberry Pi, connect Raspberry with Windows computer 
 via Ethernet Patchkord. Attach power supply to Raspberry Pi e.g. via MicroUSB.
-
 6) Install Putty on windows and connect to 192.168.10.2
 User: pi 
 Password: raspberry
-
 7) Change Password: 
 sudo -s
 raspi-config
 Change User Password
-
 8) To copy files to Raspberry via scp, use eg Far Manager mit WinSCP Plugin. 
-
-9) copy  interfaces und wpa_supplicant.conf from conf/
+9) copy  interfaces and wpa_supplicant.conf from conf/
 to /home/pi/
-
 10). move files using putty 
 sudo mv interfaces /etc/network/
 sudo mv wpa_supplicant.conf /etc/wpa_supplicant/
-
+edit password and SSID to have access to your WLAN network
 11) nano /boot/cmdline.txt
 remove ip=192.168.10.2
-
-12) Insert USB WIFiStick
+12) Insert USB WiFi Stick
 ifdown wlan0
 ifup wlan0
-check internet z.b.
+check internet e.g.
 ping google.de
-
-
+should show some responce time in ms
 13) sudo apt-get update
-
 14) activate I2C.
 raspi-config 
 Advanced Options
 I2C
 Yes for all questions. Reboot. 
-
-15)
-connect using Putty again. In putty 
+15) connect using Putty again. Execute commands:
 sudo -s 
 apt-get update
 apt-get install -y python-smbus
@@ -59,7 +48,6 @@ i2c-bcm2708 
 i2c-dev
 
 Depending on your distribution, you may also have a file called /etc/modprobe.d/raspi-blacklist.conf
-
 If you do not have this file then there is nothing to do, however, 
 if you do have this file, you need to edit it and comment out the lines below: 
 1. blacklist spi-bcm2708
@@ -74,7 +62,6 @@ reboot
 
 sudo i2cdetect -y 1
 
-
 mkdir notsmb
 cd notsmb
 wget http://www.byvac.com/downloads/sws/notsmb_1_0.zip
@@ -82,7 +69,6 @@ unzip notsmb_1_0.zip
 apt-get update
 sudo apt-get install python-dev
 python setup.py install
-
 
 16) Switch off Raspberry and connect i2c Sensor to i2c pins of Raspberry. 
 Switch on and connect to raspberry using putty:
@@ -92,7 +78,7 @@ copy test/CO2meter.py to /home/pi/ and test:
 
 python CO2meter.py
 
-17) Adafruit installieren:
+17) install Adafruit:
 copy folder 
 DHT22/Adafruit_Python_DHT in /home/pi
 
@@ -103,7 +89,6 @@ sudo apt-get install build-essential python-dev
 sudo python setup.py install
 clear 
 cd ..
-
 
 18) test dht22: 
 Connect DHT22 Sensor zu: GND VCC3.3V GPIO-8-Data.
@@ -117,8 +102,7 @@ h,t = dht.read_retry(dht.DHT22, 8)
 
 Ok.
 
-19) 
-Datenbank einrichten:
+19) Install and configure database:
 
 apt-get update
 #install mysql library for python 
@@ -133,7 +117,6 @@ bind-address= 0.0.0.0
 
 #php apache installieren:
 sudo apt-get install apache2 php5 libapache2-mod-php5
-
 
 mysql -u root -p
 
@@ -156,19 +139,15 @@ Ctrl+C
 
 select * from Datenerfassung.RHTCO2 order by id desc limit 100;
 
-
-
 20) Create Folder RHTCO2
 exit, wenn es root war.
 mkdir RHTCO2
 
-
 copy src files of RHTCO2 project into /home/pi/RHTCO2/
-
 
 configure if necessary all settings in settingsRHTCO2_009.py
 
-copy conf/rc.local and conf/sqlwrapper.php to /home/pi
+copy conf/sqlwrapper.php to /home/pi
 
 copy relevant content from conf/rc.local
 and insert it using
@@ -192,25 +171,39 @@ sudo -s
 
 nano /etc/ntp.conf
 
-comment standard server
-put instead:
-
+if necessary, then comment standard server, put instead allowed in your network ntp server:
 #server time-ol.hs-woe.de iburst
 #server time-whv.hs-woe.de iburst
 
 in putty:
 
 ntpd -q -g
-sudo /etc/init.d/ntp stop
-sudo /etc/init.d/ntp start
+sudo /etc/init.d/ntp restart
 
 raspi-config 
 internationalization Options
 Time Zone
 Europe Berlin
-
-
 sudo reboot
+
+***
+configure clock modul:
+sudo nano /etc/modules
+add line
+rtc-ds1307
+
+mv RHTCO2/settimetryet.py  /home/pi/
+
+sudo nano /etc/rc.local
+
+echo ds1307 0x68 > /sys/class/i2c-adapter/i2c-1/new_device
+sudo python /home/pi/settimetryer.py >> /home/pi/settimetryer_log.txt &
+#hwclock -s
+
+see
+http://www.raspberrypi-spy.co.uk/2015/05/adding-a-ds3231-real-time-clock-to-the-raspberry-pi/
+***
+
 
 Following steps configure optional uploader :
 22) configure uploader:  
@@ -239,8 +232,8 @@ sudo python3 /home/pi/RHTCO2/uplo05.py   /home/pi/RHTCO2/  settingsRHTCO2.py 1> 
 
 24) 
 Check guteluft.jade-hs.de 
-find data of correcponding toom. 
+find data of correcponding room. 
 
 
 25) 
-pusten in sensor check umschaltung rot-grün
+blow to sensor to check switch of red LED

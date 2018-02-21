@@ -4,6 +4,10 @@
 # logger (controller) class for RT T CO2 logging CO2 Ampel controlling
 # K-30, DHT22 or HYT sensors are available
 
+# The logger saves data into files, into RHTCO2 table "permanently"
+# and into table FAST, just temporally to make it available for fast logging.
+# if option FAST is active we just comment saving into RHTCO2 table
+
 
 import imp, sys, os, time, datetime
 from notsmb import notSMB
@@ -68,7 +72,9 @@ class RHTCO2():
             else: 
                 self.CO2Limit = self.P.CO2Limit	
 
-# note, that SQLuser must be defined here
+        self.controlscount = 0
+
+
         # Fast Output 
         if (hasattr(self.P, 'FAST')):            
             self.FAST = self.P.FAST             
@@ -81,18 +87,15 @@ class RHTCO2():
         else: # save each Hour if nothing is specified.
             self.SwitchOutputFileInterval = "%H"   #%M  %H
 
-
-
-        if (self.FAST): # do it only for not FAST regime
-            
-            self.SQLFASTini()
-        else: 
-            if (hasattr(self.P, 'uploadstable')): # if defined uploadstable, the use it instead of 
+        
+        self.SQLFASTini()  # do it only for not FAST regime            
+        
+        if (hasattr(self.P, 'uploadstable')): # if defined uploadstable, the use it instead of 
                 							 # prefixes of files to set information about files
-                # import necessary function, if parameter is defined                
-                self.f = open(self.opath + self.fname, 'a')
-            else:
-                self.f = open(self.opath + "current_" + self.fname, 'a')
+            # import necessary function, if parameter is defined                
+            self.f = open(self.opath + self.fname, 'a')
+        else:
+            self.f = open(self.opath + "current_" + self.fname, 'a')
 
 
     def GetData(self): 
@@ -180,85 +183,85 @@ class RHTCO2():
     def TimeDeltaToSeconds(self, t0,t1):
         return (t1-t0).seconds + (t1-t0).microseconds / 1000000.0
         
-        
-# ATTENTION !!! IT MUST BE CALLED ONLY AFTER GET DATA!!!!
-    # SaveData function. 
-    def SaveData(self): 
-        if (self.FAST):
-            SQLsend(self.P.SQLserver, self.P.SQLuser, self.P.SQLpw, "FAST", self.ReadTime, self.h, self.t, self.co2Val)
-            # self.SQLcleanFAST() to finish # must check table size
-            
-            
-        else:	
-            #  try to add data to mySQL server. if not do logging further.
-            try:
-                if (hasattr(self.P, 'SQLuser')):
-                    SQLsend(self.P.SQLserver, self.P.SQLuser, self.P.SQLpw, self.P.tabelle, self.ReadTime, self.h, self.t, self.co2Val)
-            except:
-                pass
+    # ATTENTION !!! IT MUST BE CALLED ONLY AFTER GET DATA!!!!    :
+    def SaveData(self):  
+        # wird immer FAST gespeichert
+        SQLsend(self.P.SQLserver, self.P.SQLuser, self.P.SQLpw, "FAST", self.ReadTime, self.h, self.t, self.co2Val)
+        #  try to add data to mySQL server. if not do logging further.
+        try:
+            if ((hasattr(self.P, 'SQLuser')) and not (self.FAST)):
+                SQLsend(self.P.SQLserver, self.P.SQLuser, self.P.SQLpw, self.P.tabelle, self.ReadTime, self.h, self.t, self.co2Val)
+        except:
+            pass
+		
+        # output to file will be done always    
+        # compose string to output into file
+        OString = self.ReadTime.strftime("%d.%m.%Y %H:%M:%S") 
+        OString = OString + "	" + "{:.2f}".format(self.h) + "	" + "{:.2f}".format(self.t)  
+        OString = OString + "	" + str(self.co2Val)
+        #if (hasattr(self.P, 'HYT271address')):
+        #    OString = OString + "	" + "{:.2f}".format(H) + "	" + "{:.2f}".format(T)
 		    
-            # compose string to output into file
-            OString = self.ReadTime.strftime("%d.%m.%Y %H:%M:%S") 
-            OString = OString + "	" + "{:.2f}".format(self.h) + "	" + "{:.2f}".format(self.t)  
-            OString = OString + "	" + str(self.co2Val)
-            #if (hasattr(self.P, 'HYT271address')):
-            #    OString = OString + "	" + "{:.2f}".format(H) + "	" + "{:.2f}".format(T)
-		    
-            # ================================================================
-            OString = OString + "\n"
-            self.f.write(OString)
-            self.f.flush()
+        # ================================================================
+        OString = OString + "\n"
+        self.f.write(OString)
+        self.f.flush()
         
     # we save data to new file each day, hour ... depending on parameter 
     # P.SaveInterval or  SwitchOutputFileInterval   
     #%M  %H
     def SwitchOutputFile(self):
-        if (not self.FAST): # do it only for not FAST regime
-            self.f.close()
-            time.sleep(3) 
-            # 3.05.2016
-            # close function needs time apparently, so that next operation
-            # mv does not succeed sometimes. apparently if many files are already stored in directory
-            # we make therefore couple of seconds delay after close(). once for each saved file (normally each hour)
+        
+        self.f.close()
+        time.sleep(3) 
+        # 3.05.2016
+        # close function needs time apparently, so that next operation
+        # mv does not succeed sometimes. apparently if many files are already stored in directory
+        # we make therefore couple of seconds delay after close(). once for each saved file (normally each hour)
+        
+        
+        # 07.01.2018:
+        if (hasattr(self.P, 'uploadstable')):# if defined uploadstable, the use it instead of 
+    										 # prefixes of files to set information about files
+    			
+            # just create new file without any current_ prefixes
+            # instead send record with filename into uploadstable
+            
+            try:
+                SQLsendFName(self.P.SQLserver, self.P.SQLuser, self.P.SQLpw, 'uploads', self.opath + self.fname, self.P.ftpbenutzer, self.P.ftppasswort, self.P.FTPfolder)
+            except:
+                pass
+    
+            self.fname  = self.P.fileprefix + self.ReadTime.strftime("%Y_%m_%d_%H_%M") + self.fileextension
+            self.f = open(self.opath + self.fname, 'w')								 
+    
+        else:
+            # we need to handle files if uploadstable is not defined
+            # here fname is just fname of just closed file
+            commandtodo = "mv " + self.opath + "current_" + self.fname + " " + self.opath + self.fname
+            os.system(commandtodo)
             
             
-            # 07.01.2018:
-            if (hasattr(self.P, 'uploadstable')):# if defined uploadstable, the use it instead of 
-    											 # prefixes of files to set information about files
-    				
-                # just create new file without any current_ prefixes
-                # instead send record with filename into uploadstable
-                
-                try:
-                    SQLsendFName(self.P.SQLserver, self.P.SQLuser, self.P.SQLpw, 'uploads', self.opath + self.fname, self.P.ftpbenutzer, self.P.ftppasswort, self.P.FTPfolder)
-                except:
-                    pass
-    
-                self.fname  = self.P.fileprefix + self.ReadTime.strftime("%Y_%m_%d_%H_%M") + self.fileextension
-                self.f = open(self.opath + self.fname, 'w')								 
-    
-            else:
-                # we need to handle files if uploadstable is not defined
-                # here fname is just fname of just closed file
-                commandtodo = "mv " + self.opath + "current_" + self.fname + " " + self.opath + self.fname
-                os.system(commandtodo)
-                
-                
-                # 20.01.2017
-                # delay does not help, current_ files are not renamed after some time anymore again
-                # to recover, we insert:
-                #renamecurrents(self.opath) # rename possibly earlier stored current files. 
-                # 10.01.2018 commented, since it does not help
-                # does it help?
-                #------------------------------------------------------------
-                self.fname  = self.P.fileprefix + self.ReadTime.strftime("%Y_%m_%d_%H_%M") + self.fileextension # _%M
-                self.f = open(self.opath + "current_" + self.fname, 'w')
+            # 20.01.2017
+            # delay does not help, current_ files are not renamed after some time anymore again
+            # to recover, we insert:
+            #renamecurrents(self.opath) # rename possibly earlier stored current files. 
+            # 10.01.2018 commented, since it does not help
+            # does it help?
+            #------------------------------------------------------------
+            self.fname  = self.P.fileprefix + self.ReadTime.strftime("%Y_%m_%d_%H_%M") + self.fileextension # _%M
+            self.f = open(self.opath + "current_" + self.fname, 'w')
 
-# ATTENTION !!! IT MUST BE CALLED ONLY AFTER GET DATA!!!!
+    # ATTENTION !!! IT MUST BE CALLED ONLY AFTER GET DATA!!!!
     def Control(self):
         if (hasattr(self.P, 'SignalControlPin')):
             if (self.co2Val>self.CO2Limit): 
-                GPIO.output(self.P.SignalControlPin, GPIO.HIGH) 
+                self.controlscount = self.controlscount + 1
+            else:
+                self.controlscount = 0
+                
+            if (self.controlscount>3): # if it is confirmed several times     
+                GPIO.output(self.P.SignalControlPin, GPIO.HIGH)                 
             else:
                 GPIO.output(self.P.SignalControlPin, GPIO.LOW)  # test, how it works
 
@@ -294,24 +297,24 @@ class RHTCO2():
 
 
     def CleanandExit(self):
-        if (not self.FAST): # do it only for not FAST regime
-            self.f.close()
-            print("file closed")
+        
+        self.f.close()
+        print("file closed")
 
-            # also last file must be send to main server. 
-            # 07.01.2018:
-            if (hasattr(self.P, 'uploadstable')):# if defined uploadstable, the use it instead of 
-            								 # prefixes of files to set information about files
-                try:
-                    SQLsendFName(self.P.SQLserver, self.P.SQLuser, self.P.SQLpw, 'uploads', self.opath + self.fname, self.P.ftpbenutzer, self.P.ftppasswort, self.P.FTPfolder)
-                except:
-                    pass
-            else:
-                commandtodo = "mv " + "current_" + self.fname + " " + self.fname
-                ###print(commandtodo)
-                os.system(commandtodo)
-            	
-            print("file moved or data saved to sql uploads")	
+        # also last file must be send to main server. 
+        # 07.01.2018:
+        if (hasattr(self.P, 'uploadstable')):# if defined uploadstable, the use it instead of 
+        								 # prefixes of files to set information about files
+            try:
+                SQLsendFName(self.P.SQLserver, self.P.SQLuser, self.P.SQLpw, 'uploads', self.opath + self.fname, self.P.ftpbenutzer, self.P.ftppasswort, self.P.FTPfolder)
+            except:
+                pass
+        else:
+            commandtodo = "mv " + "current_" + self.fname + " " + self.fname
+            ###print(commandtodo)
+            os.system(commandtodo)
+        	
+        print("file moved or data saved to sql uploads")	
         # switch off Voltage:
         #GPIO.output(GPIOVoltagePin, GPIO.LOW) # default satte of power is off
         renamecurrents(self.opath)
