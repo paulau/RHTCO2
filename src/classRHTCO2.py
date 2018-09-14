@@ -72,6 +72,13 @@ class RHTCO2():
             else: 
                 self.CO2Limit = self.P.CO2Limit	
 
+        # ------------- if control setting is defined in settings file, --------
+        # ------------------------- then use it! -------------------------------
+        if (hasattr(self.P, 'VentControlPin')):
+            GPIO.setup(self.P.VentControlPin, GPIO.OUT, pull_up_down=GPIO.PUD_DOWN) 
+                                            # pull down to allways off if not active
+
+
         self.controlscount = 0
 
 
@@ -261,9 +268,21 @@ class RHTCO2():
                 self.controlscount = 0
                 
             if (self.controlscount>3): # if it is confirmed several times     
-                GPIO.output(self.P.SignalControlPin, GPIO.HIGH)                 
+                GPIO.output(self.P.SignalControlPin, GPIO.HIGH)
+
+                # Note, it will work only as addition to the SignalControlPin
+                # additionnaly to signal to user, switch on ventillation,
+                # if defined in settings
+                if (hasattr(self.P, 'VentControlPin')):
+                    GPIO.output(self.P.VentControlPin, GPIO.HIGH)
+                    
             else:
                 GPIO.output(self.P.SignalControlPin, GPIO.LOW)  # test, how it works
+                # additionnaly to signal to user, switch on ventillation,
+                # if defined in settings
+                if (hasattr(self.P, 'VentControlPin')):
+                    GPIO.output(self.P.VentControlPin, GPIO.LOW)
+                
 
     # The FAST table will be refreshed after each start of script
     def SQLFASTini(self):

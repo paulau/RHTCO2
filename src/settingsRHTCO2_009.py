@@ -32,6 +32,11 @@ FAST = True
 SignalControlPin = 18 
 CO2Limit = 1000
 
+VentControlPin = 21 # Additionnally to signal (red ligt), the switch on off
+                    # of a ventillator is added
+
+
+
 # settings for visualisation:
 window=False
 outfile="RHTCO2.png"
