@@ -1,13 +1,30 @@
 RHTCO2
 
-This project is implemented to 
+The aim of this project is to implement Software-Hardware product, which 
+will provide to people 
+a) Information about the indoor airquality = quality of air in the buildings
+b) Control Ventilators to keep the air quality within the desired quality IDA 1 - IDA 4, 
+see DIN EN 13779
+
+The Hardware is built of:
+* Raspberry Pi B 2
+* K - 30 CO2 Sensor
+* LEDs 5V Red See e.g. Docs/LEDExample.jpg
+* Transistor Switch to control LEDs (See) Docs/transistor.pdf 
+* Relay for Raspberries 
+* Optionally Temperature and Humidity Sensors eg DHT 22, 
+
+
+
+The Software part is able to 
 * read the data of temperature, humidity and CO2 sensors  (DHT22, K-30 - CO2, HYT271)
-* to store the sata as set of text files with columns (date time RH T CO2)
+* store the sata as set of text files with columns (date time RH T CO2)
   and in MySQL database Datenerfassung in table RHTCO2
-* to send data as separate files via ftp to some central server 
-* to make available the fast data in table Datebnerfassung.FAST 
+* send data as separate files via ftp to some central server 
+* make available the fast data in table Datebnerfassung.FAST 
   (also available via php wrapper: sqlwrapper.php ana Apache Web Server)
-* To control LED(automatically): switch on, if CO2 -concentration too high is. 
+* To control LED(automatically): switch on, if CO2 -concentration is too high.
+* To control Ventilator(automatically): switch on, if CO2 - concentration is too high, and off if low enough. 
 
 
 Raspberry should have following packages:

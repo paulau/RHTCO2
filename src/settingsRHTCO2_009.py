@@ -29,13 +29,27 @@ SQLserver = "localhost"
 
 FAST = True
 
-SignalControlPin = 18 
-CO2Limit = 1000
+SignalControlPin = 21 
 
-VentControlPin = 21 # Additionnally to signal (red ligt), the switch on off
+# CO2 concentration in excess above the outdoor air:
+# IDA1  <= 400    High Quality
+# IDA2  400-600   Average Quality
+# IDA3  600-1000  moderate quality
+# IDA4  >1000     low quality
+# __________________
+# DIN EN 13779
+
+
+
+
+#An average concentration of CO2 in outdoor air is 400ppm Year 2018.
+
+CO2Limit = 1000 # 1000 ppm means IDA 3 Lower range of moderate quality
+
+VentControlPin = 18 # Additionnally to signal (red ligt), the switch on off
                     # of a ventillator is added
 
-
+CO2LimitOff = 800 # IDA 1 
 
 # settings for visualisation:
 window=False

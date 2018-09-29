@@ -80,7 +80,25 @@ class RHTCO2():
 
 
         self.controlscount = 0
-
+        self.ventoncontrolscount = 0
+        self.ventoffcontrolscount = 0
+        
+        # note, that CO2LimitOff must be defined and less than CO2Limit 
+        # to perform discrete (on -off ventilator) control of ventilation
+        
+        if (not hasattr(self.P, 'CO2LimitOff')):
+            self.CO2LimitOff = 600
+        else: 
+            self.CO2LimitOff = self.P.CO2LimitOff	
+                 
+        
+        if (hasattr(self.P, 'CO2LimitOff')) & (hasattr(self.P, 'VentControlPin')):
+            if (self.CO2LimitOff < self.CO2Limit):
+                self.controlVentCondition = True
+            else:
+                self.controlVentCondition = False
+                
+        
 
         # Fast Output 
         if (hasattr(self.P, 'FAST')):            
@@ -269,20 +287,31 @@ class RHTCO2():
                 
             if (self.controlscount>3): # if it is confirmed several times     
                 GPIO.output(self.P.SignalControlPin, GPIO.HIGH)
-
-                # Note, it will work only as addition to the SignalControlPin
-                # additionnaly to signal to user, switch on ventillation,
-                # if defined in settings
-                if (hasattr(self.P, 'VentControlPin')):
-                    GPIO.output(self.P.VentControlPin, GPIO.HIGH)
-                    
             else:
                 GPIO.output(self.P.SignalControlPin, GPIO.LOW)  # test, how it works
-                # additionnaly to signal to user, switch on ventillation,
-                # if defined in settings
-                if (hasattr(self.P, 'VentControlPin')):
-                    GPIO.output(self.P.VentControlPin, GPIO.LOW)
-                
+
+    # Actually, control of ventilation should work a bit differently from the control of lights
+    # for example, the ventilator switches on off too often
+    # One needs to have additional Parameter CO2LimitOff
+    def ControlVent(self):        
+        if self.controlVentCondition:
+            
+            if (self.co2Val>self.CO2Limit): 
+                self.ventoncontrolscount = self.ventoncontrolscount + 1
+            else:
+                self.ventoncontrolscount = 0
+            
+            if (self.co2Val<self.CO2LimitOff): 
+                self.ventoffcontrolscount = self.ventoffcontrolscount + 1
+            else:
+                self.ventoffcontrolscount = 0
+        
+            if (self.ventoncontrolscount>3): # if it is confirmed several times                     
+                GPIO.output(self.P.VentControlPin, GPIO.HIGH)                    
+        
+            if (self.ventoffcontrolscount>3): # if it is confirmed several times                     
+                GPIO.output(self.P.VentControlPin, GPIO.LOW)
+            
 
     # The FAST table will be refreshed after each start of script
     def SQLFASTini(self):

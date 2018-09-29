@@ -55,7 +55,10 @@ while True:
         t1 = datetime.datetime.today()
         logger.GetData() 
         logger.SaveData()        
-        logger.Control()
+        logger.Control()     # to control LED to tell to user, that light is bad or good
+        logger.ControlVent() # to control ventilator on off
+                             # as soon as the 'logger object'  got 
+                             # 'the control' functionality, it is reasonable to name it differently
        
         Prevtm = int(PrevSaveTime.strftime(logger.SwitchOutputFileInterval))
         tm = int(logger.ReadTime.strftime(logger.SwitchOutputFileInterval))
