@@ -1,0 +1,28 @@
+aaa01_2018_09_12_00_00.png
+
+Shows the timeseries of temperature, CO2 and relative humidity for one day.
+The ventilation is configured to switch ventilator on at 
+CO2Limit = 1400 
+and to switch it off at
+CO2LimitOff = 800 
+
+The frequency of Takted switches depends on the natural airexchange. (Lüftwechselrate)
+The more airexchange is there the less is the ventilator needed. 
+If the natural air exchange is small, then ventilator is needed oft. 
+
+
+aaa01_2018_09_12_00_00Full.png
+
+Shows the timeseries as described above, but for longer time. 
+* There was a couple of days without people in the room (in the middle of picture)
+  The solar heating and night kooling of the room is well seen.
+  
+* one could make humidity lower
+
+* with 800W heater, the temperature was around 30°C
+    
+
+
+
+
+

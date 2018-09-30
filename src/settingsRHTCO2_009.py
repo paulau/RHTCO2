@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+import datetime
+
 # Attention! Very specific setting for one or two reconfigured sensors.
 CO2_ADDR = 0x60
 
@@ -62,4 +64,8 @@ y1max=80
 dpivalue=96 #150
 Description=" "
 tex = False
+description = ""  
+ymax =  1400
+d1 = datetime.datetime(2018, 9, 24, 17, 00) 
+d2 = datetime.datetime(2018, 9, 25, 17, 00) 
 
