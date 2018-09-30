@@ -64,3 +64,15 @@ one of subjects is tango server. The only purpose of the button is to be functio
 within tango framework
 
 
+src/ - contains a source code to operate on Raspberry
+
+
+srcvisu/ - contains a source code to operate on Windows Desktop to visualise the data of Sensors
+monat1.py - to concatenate the separate files
+GetRecent.py - Auxiliary functions for monat1.py
+visualiserotrocall.py - to start visualisation of data
+visualiseRotro.py - auxiliary visualisation functions
+
+
+
+
